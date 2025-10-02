@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Gradle shim for Expo-managed projects.
+# Ensures native android project exists before running the actual Gradle wrapper.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# If android/gradlew doesn't exist, generate native projects first
+if [ ! -f "${SCRIPT_DIR}/android/gradlew" ]; then
+  echo "[gradlew shim] android/gradlew not found. Running Expo prebuild for Android..."
+  npx --yes expo prebuild --platform android
+fi
+
+cd "${SCRIPT_DIR}/android"
+
+# Ensure gradle wrapper is executable
+chmod +x ./gradlew
+
+# Forward all args to real gradle wrapper
+./gradlew "$@"
